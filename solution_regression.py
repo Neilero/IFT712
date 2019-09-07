@@ -87,7 +87,7 @@ class Regression:
         afin de calculer la prediction y(x,w) (equation 3.1 et 3.3).
         """
 
-        return np.matmul(self.fonction_base_polynomiale(x), self.w)
+        return self.w[0] + np.matmul(self.w[1:], x)
 
     @staticmethod
     def erreur(t, prediction):
