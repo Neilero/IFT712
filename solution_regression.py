@@ -25,7 +25,9 @@ class Regression:
         NOTE : En mettant phi_x = x, on a une fonction de base lineaire qui fonctionne pour une regression lineaire
         """
 
-        phi_x = x ** np.arange(self.M)
+        n = len(x)
+        phi_x_repeated = np.repeat(x, self.M).reshape((n, self.M))
+        phi_x = np.power(phi_x_repeated, np.arange(1, self.M+1))
         return phi_x
 
     def recherche_hyperparametre(self, X, t):
