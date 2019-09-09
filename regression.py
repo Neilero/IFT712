@@ -36,7 +36,7 @@ def main():
         print("\t nb_train: nombre de donnees d'entrainement")
         print("\t nb_test: nombre de donnees de test")
         print("\t bruit: amplitude du bruit appliqué aux données")
-        print("\t M: degré du polynome de la fonction de base (recherche d'hyperparametre lorsque M<0) ")
+        print("\t M: degré du polynome de la fonction de base (recherche d'hyperparametre lorsque M<=0) ")
         print("\t lambda: lambda utilisé par le modele de Ridge\n")
         print(" exemple: python3 regression.py 1 sin 20 20 0.3 10 0.001\n")
         return

@@ -25,9 +25,14 @@ class Regression:
         NOTE : En mettant phi_x = x, on a une fonction de base lineaire qui fonctionne pour une regression lineaire
         """
 
-        n = len(x)
-        phi_x_repeated = np.repeat(x, self.M).reshape((n, self.M))
-        phi_x = np.power(phi_x_repeated, np.arange(1, self.M+1))
+        n = 1 # on suppose x est un scalaire et on définit le nombre de lignes de phi_x à 1...
+        if not np.isscalar(x):
+            #... si ce n'est pas le cas on regarde le nombre de colonnes de x pour définir le nombre de ligne de phi_x
+            n = len(x)
+
+        m = self.M+1    # +1 pour w0
+        x_repeated = np.repeat(x, m).reshape((n, m))
+        phi_x = np.power(x_repeated, np.arange(m))
         return phi_x
 
     def recherche_hyperparametre(self, X, t):
@@ -43,6 +48,21 @@ class Regression:
 
 
         self.M = 1
+
+    def calcule_parametres_optimal(self, X, t):
+        """
+        Calcul le vecteur de parametres optimal selon les donnees ``X``
+        et le vecteur de cible ``t`` via une procedure de resolution
+        de systeme d'equations lineaires.
+        """
+
+        phi_x = self.fonction_base_polynomiale(X)
+        phi_x_t = np.transpose(phi_x)
+
+        A = (self.lamb * np.identity(self.M + 1)) + np.matmul(phi_x_t, phi_x)
+        B = np.matmul(phi_x_t, t)
+
+        return np.linalg.solve(A, B) # resoud l'equation A*X = B et retourne X
 
     def entrainement(self, X, t, using_sklearn=False):
         """
@@ -70,12 +90,15 @@ class Regression:
         NOTE IMPORTANTE : lorsque self.M <= 0, il faut trouver la bonne valeur de self.M
 
         """
-        #AJOUTER CODE ICI
         if self.M <= 0:
             self.recherche_hyperparametre(X, t)
 
-        phi_x = self.fonction_base_polynomiale(X)
-        self.w = [0, 1]
+        if using_sklearn:
+            regression = linear_model.Ridge(self.lamb).fit(X, t)
+            self.w = regression.coef_
+
+        else:
+            self.w = self.calcule_parametres_optimal(X, t)
 
     def prediction(self, x):
         """
@@ -87,7 +110,8 @@ class Regression:
         afin de calculer la prediction y(x,w) (equation 3.1 et 3.3).
         """
 
-        return self.w[0] + np.matmul(self.w[1:], x)
+        phi_x = self.fonction_base_polynomiale(x)
+        return np.matmul(self.w, phi_x[0]) # ici x est toujours un scalaire donc phi_x ne contient toujours qu'une ligne
 
     @staticmethod
     def erreur(t, prediction):
