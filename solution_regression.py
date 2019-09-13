@@ -16,6 +16,16 @@ class Regression:
         self.w = None
         self.M = m
 
+        # nombre de validation croisée effectuée pour chaque paire d'hyperparamètres
+        self.k_fold = 10
+
+        # pourcentage gardé pour entrainer le model lors d'une validation croisée
+        self.k_fold_split = 0.8
+
+        # plage de validation croisée
+        self.plage_M = np.arange(0, 25)
+        self.plage_lamb = np.linspace(0.001, 1, 1000)
+
     def fonction_base_polynomiale(self, x):
         """
         Fonction de base qui projette la donnee x vers un espace polynomial tel que mentionne au chapitre 3.
@@ -46,20 +56,59 @@ class Regression:
         t: vecteur de cibles
         """
 
+        data = [np.array(couple) for couple in zip(X, t)] # associe la donnee X_i à la cible t_i
+        best_error = float("inf")
+        delimiter = int( len(X) * self.k_fold_split )
 
-        self.M = 1
+        for M in self.plage_M:
 
-    def calcule_parametres_optimal(self, X, t):
+            # nous devons modifier self.M pour pouvoir utiliser la méthode fonction_base_polynomiale dans prediction
+            current_M = self.M
+            current_M_error = best_error
+            self.M = M
+
+            for lamb in self.plage_lamb:
+
+                sum_error = 0
+
+                for _ in range(self.k_fold):
+                    random.shuffle(data)
+
+                    D_train = [np.array(a) for a in zip(*data[:delimiter])]
+                    D_valid = [np.array(a) for a in zip(*data[delimiter:])]
+
+                    self.w = self.calcule_parametres_optimal(D_train[0], D_train[1], lamb, M)
+                    prediction = [self.prediction(x) for x in D_valid[0]]
+                    error = self.erreur(D_valid[1], prediction)
+
+                    sum_error += error
+
+                    if sum_error > best_error:
+                        break # optimisation (si nous avons deja trouve pire, ce n'est pas la peine de continuer)
+
+                if sum_error < best_error:
+                    self.lamb = lamb
+                    best_error = sum_error
+
+            if best_error == current_M_error:   # si nous n'avons pas trouve de meilleur couple (M, λ)...
+                self.M = current_M              # ... nous gardons le precedent meilleur M
+
+    def calcule_parametres_optimal(self, X, t, lamb=None, M=None):
         """
         Calcul le vecteur de parametres optimal selon les donnees ``X``
         et le vecteur de cible ``t`` via une procedure de resolution
         de systeme d'equations lineaires.
         """
 
+        if lamb is None:
+            lamb = self.lamb
+        if M is None:
+            M = self.M
+
         phi_x = self.fonction_base_polynomiale(X)
         phi_x_t = np.transpose(phi_x)
 
-        A = (self.lamb * np.identity(self.M + 1)) + np.matmul(phi_x_t, phi_x)
+        A = (lamb * np.identity(M + 1)) + np.matmul(phi_x_t, phi_x)
         B = np.matmul(phi_x_t, t)
 
         return np.linalg.solve(A, B) # resoud l'equation A*X = B et retourne X
@@ -94,7 +143,9 @@ class Regression:
             self.recherche_hyperparametre(X, t)
 
         if using_sklearn:
-            regression = linear_model.Ridge(self.lamb).fit(X, t)
+            #fixme
+            x = np.reshape(X, (-1, 1))
+            regression = linear_model.Ridge(self.lamb).fit(x, t)
             self.w = regression.coef_
 
         else:
