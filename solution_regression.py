@@ -8,6 +8,9 @@
 import numpy as np
 import random
 from sklearn import linear_model
+from sklearn.pipeline import make_pipeline
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import PolynomialFeatures
 
 
 class Regression:
@@ -143,10 +146,10 @@ class Regression:
             self.recherche_hyperparametre(X, t)
 
         if using_sklearn:
-            #fixme
-            x = np.reshape(X, (-1, 1))
-            regression = linear_model.Ridge(self.lamb).fit(x, t)
-            self.w = regression.coef_
+            X_t = np.reshape(X, (-1, 1))    # transpose X pour correspondre au format specifie par sklearn
+            model = make_pipeline(PolynomialFeatures(self.M), linear_model.Ridge(alpha=self.lamb))
+            model.fit(X_t, t)
+            self.w = model
 
         else:
             self.w = self.calcule_parametres_optimal(X, t)
@@ -160,6 +163,9 @@ class Regression:
         a prealablement ete appelee. Elle doit utiliser le champs ``self.w``
         afin de calculer la prediction y(x,w) (equation 3.1 et 3.3).
         """
+        if isinstance(self.w, Pipeline):
+            X = np.reshape(x, (1, -1))  # reshape pour correspondre au format specifie par sklearn
+            return self.w.predict(X)
 
         phi_x = self.fonction_base_polynomiale(x)
         return np.matmul(self.w, phi_x[0]) # ici x est toujours un scalaire donc phi_x ne contient toujours qu'une ligne
