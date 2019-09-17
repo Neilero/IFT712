@@ -2,15 +2,16 @@
 
 #####
 # Aurélien Vauthier (19 126 456)
-# Tahir Sahar (19 145  088)
+# Tahir Sahar (19 145 088)
 # Ikram Mekkid (19 143 008)
 ####
 
-import numpy as np
 import random
+
+import numpy as np
 from sklearn import linear_model
-from sklearn.pipeline import make_pipeline
 from sklearn.pipeline import Pipeline
+from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import PolynomialFeatures
 
 
