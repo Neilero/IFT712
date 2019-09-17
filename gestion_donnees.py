@@ -2,7 +2,8 @@
 
 #####
 # Aurélien Vauthier (19 126 456)
-# TAHIR Sahar (19 145 088)
+# Tahir Sahar (19 145  088)
+# Ikram Mekkid (19 143 008)
 ###
 
 import numpy as np
