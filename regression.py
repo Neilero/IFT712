@@ -1,10 +1,18 @@
 # -*- coding: utf-8 -*-
 
-import numpy as np
+#####
+# Aurélien Vauthier (19 126 456)
+# Tahir Sahar (19 145 088)
+# Ikram Mekkid (19 143 008)
+###
+
 import sys
-import solution_regression as sr
-import gestion_donnees as gd
+
 import matplotlib.pyplot as plt
+import numpy as np
+
+import gestion_donnees as gd
+import solution_regression as sr
 
 
 def warning(erreur_test, erreur_apprentissage, bruit):
@@ -16,7 +24,14 @@ def warning(erreur_test, erreur_apprentissage, bruit):
     erreur_apprentissage: erreur obtenue sur l'ensemble d'apprentissage
     bruit: magnitude du bruit
     """
-    # AJOUTER CODE ICI
+
+    if erreur_test / bruit > 1:
+        if erreur_test > 1.7 * erreur_apprentissage:
+            print("Le model est peut-être en sur-apprentissage!")
+
+        else:
+            print("Le model est peut-être en sous-apprentissage!")
+
 
 ################################
 # Execution en tant que script 
