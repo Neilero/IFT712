@@ -2,7 +2,7 @@
 
 #####
 # Aurélien Vauthier (19 126 456)
-# TODO add yours
+# Tahir Sahar (19 145  088)
 ###
 
 import numpy as np
