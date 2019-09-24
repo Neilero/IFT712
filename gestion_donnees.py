@@ -1,19 +1,15 @@
 # -*- coding: utf-8 -*-
 
 #####
-# Aurélien Vauthier (19 126 456)
-# Tahir Sahar (19 145 088)
-# Ikram Mekkid (19 143 008)
+# VotreNom (VotreMatricule) .~= À MODIFIER =~.
 ###
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 
 class GestionDonnees:
-    def __init__(self, w, modele_gen, nb_train, nb_test, bruit):
-        self.w = w
-        self.modele_gen = modele_gen
+    def __init__(self, donnees_aberrantes, nb_train, nb_test, bruit):
+        self.donnees_aberrantes = donnees_aberrantes
         self.nb_train = nb_train
         self.nb_test = nb_test
         self.bruit = bruit
@@ -27,44 +23,51 @@ class GestionDonnees:
         nb_test : nb de donnees de test
         bruit : amplitude du bruit (superieur ou egale a zero
         """
-        np.random.seed(self.nb_train)
-        x_train = np.random.rand(self.nb_train)
-        x_test = np.random.rand(self.nb_test)
-        if self.modele_gen == 'lineaire':
-            t_train = self.w[0] + x_train * self.w[1] + np.random.randn(self.nb_train) * self.bruit
-            t_test = self.w[0] + x_test * self.w[1] + np.random.randn(self.nb_test) * self.bruit
-        elif self.modele_gen == 'sin':
-            t_train = np.sin(x_train * self.w[1] * 2) + np.random.randn(self.nb_train) * self.bruit
-            t_test = np.sin(x_test * self.w[1] * 2) + np.random.randn(self.nb_test) * self.bruit
+        np.random.seed(12)  # commentez cette ligne pour tester differentes configurations
+        mu1 = np.random.randn(2)
+        mu2 = mu1 + np.random.randn(2)*10
+        mu3 = mu2*4
+        sigma1 = np.array([[4., 3.], [3., 4.]])
+        sigma2 = np.array([[6., 4.], [4., 6.]])
+        sigma3 = np.array([[1., 0.5], [0.5, 1.]])
+
+        if self.donnees_aberrantes is True:
+            nb_data = int(self.nb_train/3.0)
+            x_1 = np.random.multivariate_normal(mu1, sigma1*self.bruit, nb_data)
+            t_1 = np.ones(nb_data)
+            x_2 = np.random.multivariate_normal(mu2, sigma2*self.bruit, nb_data)
+            t_2 = np.zeros(nb_data)
+            x_3 = np.random.multivariate_normal(mu3, sigma3*self.bruit, nb_data)
+            t_3 = np.zeros(nb_data)
         else:
-            t_train = np.tanh((x_train - 0.5) * self.w[1] * 2) + np.random.randn(self.nb_train) * self.bruit
-            t_test = np.tanh((x_test - 0.5) * self.w[1] * 2) + np.random.randn(self.nb_test) * self.bruit
+            nb_data = int(self.nb_train / 2.0)
+            x_1 = np.random.multivariate_normal(mu1, sigma1*self.bruit, nb_data)
+            t_1 = np.ones(nb_data)
+            x_2 = np.random.multivariate_normal(mu2, sigma2*self.bruit, nb_data)
+            t_2 = np.zeros(nb_data)
+
+        # Fusionne toutes les données dans un seul ensemble d'entraînement
+        x_train = np.vstack([x_1, x_2])
+        t_train = np.hstack([t_1, t_2])
+        if self.donnees_aberrantes is True:
+            x_train = np.vstack([x_train, x_3])
+            t_train = np.hstack([t_train, t_3])
+
+        # Mélange dans un ordre aléatoire
+        p = np.random.permutation(len(t_train))
+        x_train = x_train[p, :]
+        t_train = t_train[p]
+
+        print("Generation des données de test...")
+        nb_data = int(self.nb_test / 2.0)
+        x_1 = np.random.multivariate_normal(mu1, sigma1*self.bruit, nb_data)
+        t_1 = np.ones(nb_data)
+        x_2 = np.random.multivariate_normal(mu2, sigma2*self.bruit, nb_data)
+        t_2 = np.zeros(nb_data)
+
+        # Fusionne toutes les données dans un seul ensemble de test
+        x_test = np.vstack([x_1, x_2])
+        t_test = np.hstack([t_1, t_2])
 
         return x_train, t_train, x_test, t_test
-
-    def afficher_donnees_et_modele(self, x, t, scatter=True):
-        """
-        afficher des donnees
-
-        x : vecteur de donnees
-        t : vecteur de cibles
-        scatter : variable determinant si on doit afficher une courbe ou des points
-        """
-        x_mod = np.arange(0, 1, 0.01)
-
-        if self.modele_gen == 'lineaire':
-            t_mod = self.w[0] + x_mod * self.w[1]
-        elif self.modele_gen == 'sin':
-            t_mod = np.sin(x_mod * self.w[1] * 2)
-        else:
-            t_mod = np.tanh((x_mod - 0.5) * self.w[1] * 2)
-
-        if scatter is True:
-            plt.scatter(x, t)
-        else:
-            idx = np.argsort(x)
-            plt.plot(x[idx], t[idx], 'g')
-
-        plt.plot(x_mod, t_mod, 'k')
-        plt.ylim(ymin=-1.5, ymax=4.5)
 
