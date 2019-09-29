@@ -5,6 +5,7 @@
 ####
 
 import numpy as np
+import sklearn
 from sklearn.linear_model import Perceptron
 import matplotlib.pyplot as plt
 
@@ -69,10 +70,17 @@ class ClassifieurLineaire:
         elif self.methode == 2:  # Perceptron + SGD, learning rate = 0.001, nb_iterations_max = 1000
             print('Perceptron')
             # AJOUTER CODE ICI
-
+            k=0
+           while np.dot(np.transpose(self.w),x_train)* t_train<0 #donnée mal classée
+                k=k+1 ;
+            for i <= 1000
+            if np.dot(np.transpose(self.w),x_train)* t_train<0
+            self.w=self.w+0.001* t_train* x_train
         else:  # Perceptron + SGD [sklearn] + learning rate = 0.001 + penalty 'l2' voir http://scikit-learn.org/
             print('Perceptron [sklearn]')
-            # AJOUTER CODE ICI
+            from sklearn.linear_model import Perceptron
+            Perceptron(penalty=l2, alpha=lamb,fit_intercept=True) #les autres arguments seront pris par defaut
+
 
         print('w = ', self.w, 'w_0 = ', self.w_0, '\n')
 
