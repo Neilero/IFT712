@@ -22,8 +22,8 @@ class ClassifieurLineaire:
                         2 pour Perceptron
                         3 pour Perceptron sklearn
         """
-        self.w = np.array([1., 2.]) # paramètre aléatoire
-        self.w_0 = -5.              # paramètre aléatoire
+        self.w = np.array([1., 2.])  # paramètre aléatoire
+        self.w_0 = -5.  # paramètre aléatoire
         self.lamb = lamb
         self.methode = methode
 
@@ -70,17 +70,18 @@ class ClassifieurLineaire:
         elif self.methode == 2:  # Perceptron + SGD, learning rate = 0.001, nb_iterations_max = 1000
             print('Perceptron')
             # AJOUTER CODE ICI
-            k=0
-           while np.dot(np.transpose(self.w),x_train)* t_train<0 #donnée mal classée
-                k=k+1 ;
-            for i <= 1000
-            if np.dot(np.transpose(self.w),x_train)* t_train<0
-            self.w=self.w+0.001* t_train* x_train
+            w = np.random.randn(len(t_train))
+            k = 0
+            while k < 1000:  # donnée mal classée
+                k = k + 1
+                for i in range(len(t_train)):
+                    if self.erreur(t_train[i], self.prediction(x_train[i])) > 0 and t_train[i] == 0:
+                        self.w = self.w + 0.001 * t_train[i] * x_train[i]
+
         else:  # Perceptron + SGD [sklearn] + learning rate = 0.001 + penalty 'l2' voir http://scikit-learn.org/
             print('Perceptron [sklearn]')
             from sklearn.linear_model import Perceptron
-            Perceptron(penalty=l2, alpha=lamb,fit_intercept=True) #les autres arguments seront pris par defaut
-
+            Perceptron(penalty='l2', alpha=lamb, fit_intercept=True)  # les autres arguments seront pris par defaut
 
         print('w = ', self.w, 'w_0 = ', self.w_0, '\n')
 
