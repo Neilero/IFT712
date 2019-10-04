@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 #####
-# Vos Noms (VosMatricules) .~= À MODIFIER =~.
+# Aurélien Vauthier (19 126 456)
 ####
 
 import numpy as np
@@ -64,7 +64,32 @@ class ClassifieurLineaire:
         """
         if self.methode == 1:  # Classification generative
             print('Classification generative')
-            # AJOUTER CODE ICI
+            self.p = np.mean(t_train)
+
+            x_train_tn = np.multiply(x_train.transpose(), t_train).transpose()   # tableau des xn * tn
+            x_train_2_mask = np.all(np.equal( x_train_tn, [0,0] ), axis=1)     # tableau booléen (True : classe 1)
+            x_train_1 = x_train[~x_train_2_mask]     # données d'entrainement de la classe 1
+            x_train_2 = x_train[x_train_2_mask]    # données d'entrainement de la classe 0
+            self.mu_1 = np.mean(x_train_1, axis=0)
+            self.mu_2 = np.mean(x_train_2, axis=0)
+
+            x_train_1_centered = x_train_1 - self.mu_1
+            x_train_2_centered = x_train_2 - self.mu_2
+            N1 = int(np.sum(t_train))
+            N2 = int(np.sum(1-t_train))
+            D = x_train.shape[1]
+            sigma_1 = np.sum(np.matmul(x_train_1_centered.reshape((N1, D, 1)), x_train_1_centered.reshape((N1, 1, D))), axis=0) / N1
+            sigma_2 = np.sum(np.matmul(x_train_2_centered.reshape((N2, D, 1)), x_train_2_centered.reshape((N2, 1, D))), axis=0) / N2
+            self.sigma = self.p * sigma_1 + (1-self.p) * sigma_2
+
+            self.w = np.dot (np.linalg.inv(self.sigma), (self.mu_1 - self.mu_2))
+
+            mu_1_t = self.mu_1.transpose()
+            mu_2_t = self.mu_2.transpose()
+            sigma_inv = np.linalg.inv(self.sigma)
+            self.w_0 = -0.5 * np.dot(np.dot(mu_1_t, sigma_inv), self.mu_1)
+            self.w_0 += 0.5 * np.dot(np.dot(mu_2_t, sigma_inv), self.mu_2)
+            self.w_0 += np.log( self.p / (1-self.p) ) # ln( p(C1)/p(C2) )
 
         elif self.methode == 2:  # Perceptron + SGD, learning rate = 0.001, nb_iterations_max = 1000
             print('Perceptron')
@@ -87,8 +112,8 @@ class ClassifieurLineaire:
         a préalablement été appelée. Elle doit utiliser les champs ``self.w``
         et ``self.w_0`` afin de faire cette classification.
         """
-        # AJOUTER CODE ICI
-        return 0
+
+        return int(self.w_0 + np.dot(self.w.transpose(), x) > 0)
 
     @staticmethod
     def erreur(t, prediction):
@@ -97,8 +122,8 @@ class ClassifieurLineaire:
         1. si la cible ``t`` et la prédiction ``prediction``
         sont différentes, 0. sinon.
         """
-        # AJOUTER CODE ICI
-        return 0
+
+        return int(t != prediction)
 
     def afficher_donnees_et_modele(self, x_train, t_train, x_test, t_test):
         """
