@@ -70,13 +70,23 @@ class ClassifieurLineaire:
         elif self.methode == 2:  # Perceptron + SGD, learning rate = 0.001, nb_iterations_max = 1000
             print('Perceptron')
             # AJOUTER CODE ICI
-            w = np.random.randn(len(t_train))
+            w_per = np.random.randn(x_train.shape[1]+1)
+            x_train_per = np.insert(x_train, 0, 1, axis=0)
+            t_train_per = t_train
+            t_train_per[t_train_per == 0] = -1
+
             k = 0
-            while k < 1000:  # donnée mal classée
+            donnee_bien_classee = False
+            while k < 1000 and not donnee_bien_classee:  # donnée mal classée
                 k = k + 1
-                for i in range(len(t_train)):
-                    if self.erreur(t_train[i], self.prediction(x_train[i])) > 0 and t_train[i] == 0:
-                        self.w = self.w + 0.001 * t_train[i] * x_train[i]
+                donnee_bien_classee = True
+                for i in range(len(x_train_per)):
+                    if np.matmul(w_per.transpose(), x_train_per[i]) * t_train_per[i] < 0:
+                        w_per = w_per + 0.001 * t_train_per[i] * x_train_per[i]
+                        donnee_bien_classee = False
+
+            self.w_0 = w_per[0]
+            self.w = w_per[1:]
 
         else:  # Perceptron + SGD [sklearn] + learning rate = 0.001 + penalty 'l2' voir http://scikit-learn.org/
             print('Perceptron [sklearn]')
