@@ -2,10 +2,11 @@
 
 #####
 # Aurélien Vauthier (19 126 456)
+# Sahar Tahir (19 145 088)
+# Ikram Mekkid (19 143 008)
 ####
 
 import numpy as np
-import sklearn
 from sklearn.linear_model import Perceptron
 import matplotlib.pyplot as plt
 
@@ -114,8 +115,10 @@ class ClassifieurLineaire:
 
         else:  # Perceptron + SGD [sklearn] + learning rate = 0.001 + penalty 'l2' voir http://scikit-learn.org/
             print('Perceptron [sklearn]')
-            from sklearn.linear_model import Perceptron
-            Perceptron(penalty='l2', alpha=lamb, fit_intercept=True)  # les autres arguments seront pris par defaut
+            self.perceptron = Perceptron(penalty='l2', alpha=0.001, fit_intercept=True, max_iter=1000)
+            self.perceptron.fit(x_train, t_train)    # uses Stochastic Gradient Descent
+            self.w = self.perceptron.coef_[0]
+            self.w_0 = self.perceptron.intercept_[0]
 
         print('w = ', self.w, 'w_0 = ', self.w_0, '\n')
 
@@ -130,6 +133,9 @@ class ClassifieurLineaire:
         a préalablement été appelée. Elle doit utiliser les champs ``self.w``
         et ``self.w_0`` afin de faire cette classification.
         """
+
+        if self.methode == 3:
+            return self.perceptron.predict(x.reshape(1, -1))[0]
 
         return int(self.w_0 + np.matmul(self.w.transpose(), x) > 0)
 

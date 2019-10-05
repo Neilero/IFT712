@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 #####
-# VotreNom (VotreMatricule) .~= À MODIFIER =~.
+# Aurélien Vauthier (19 126 456)
+# Sahar Tahir (19 145 088)
+# Ikram Mekkid (19 143 008)
 ###
 
 import numpy as np

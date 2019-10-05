@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 
+#####
+# Aurélien Vauthier (19 126 456)
+# Sahar Tahir (19 145 088)
+# Ikram Mekkid (19 143 008)
+####
+
 import numpy as np
 import sys
 import solution_classifieur_lineaire as solution
