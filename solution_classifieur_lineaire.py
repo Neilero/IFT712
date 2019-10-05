@@ -22,8 +22,8 @@ class ClassifieurLineaire:
                         2 pour Perceptron
                         3 pour Perceptron sklearn
         """
-        self.w = np.array([1., 2.])  # paramètre aléatoire
-        self.w_0 = -5.  # paramètre aléatoire
+        self.w = np.array([1., 2.]) # paramètre aléatoire
+        self.w_0 = -5.              # paramètre aléatoire
         self.lamb = lamb
         self.methode = methode
 
@@ -94,7 +94,6 @@ class ClassifieurLineaire:
 
         elif self.methode == 2:  # Perceptron + SGD, learning rate = 0.001, nb_iterations_max = 1000
             print('Perceptron')
-            # AJOUTER CODE ICI
             w_per = np.random.randn(x_train.shape[1]+1)
             x_train_per = np.insert(x_train, 0, 1, axis=0)
             t_train_per = t_train
@@ -132,7 +131,7 @@ class ClassifieurLineaire:
         et ``self.w_0`` afin de faire cette classification.
         """
 
-        return int(self.w_0 + np.dot(self.w.transpose(), x) > 0)
+        return int(self.w_0 + np.matmul(self.w.transpose(), x) > 0)
 
     @staticmethod
     def erreur(t, prediction):
