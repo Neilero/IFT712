@@ -98,8 +98,8 @@ class ClassifieurLineaire:
         elif self.methode == 2:  # Perceptron + SGD, learning rate = 0.001, nb_iterations_max = 1000
             print('Perceptron')
             w_per = np.random.randn(x_train.shape[1]+1)
-            x_train_per = np.insert(x_train, 0, 1, axis=0)
-            t_train_per = t_train
+            x_train_per = np.insert(x_train, 0, 1, axis=1)
+            t_train_per = t_train.copy()
             t_train_per[t_train_per == 0] = -1
 
             k = 0
