@@ -101,16 +101,19 @@ class ClassifieurLineaire:
             x_train_per = np.insert(x_train, 0, 1, axis=1)
             t_train_per = t_train.copy()
             t_train_per[t_train_per == 0] = -1
+            t_train_per_x3 = np.repeat([t_train_per], 3, axis=0).transpose()
 
             k = 0
-            donnee_bien_classee = False
-            while k < 1000 and not donnee_bien_classee:  # donnée mal classée
+            while k < 1000:  # donnée mal classée
                 k = k + 1
-                donnee_bien_classee = True
-                for i in range(len(x_train_per)):
-                    if np.matmul(w_per.transpose(), x_train_per[i]) * t_train_per[i] < 0:
-                        w_per = w_per + 0.001 * t_train_per[i] * x_train_per[i]
-                        donnee_bien_classee = False
+                masque_donnee_mal_classee = np.multiply(np.matmul(w_per, x_train_per.transpose()), t_train_per) < 0
+
+                # s'il n'y a que des False, alors c'est que tous les points sont bien classée
+                if np.sum(masque_donnee_mal_classee) == 0:
+                    break
+
+                gradients = np.multiply(t_train_per_x3[masque_donnee_mal_classee], x_train_per[masque_donnee_mal_classee])
+                w_per = w_per + np.sum(0.001 * gradients, axis=0)
 
             self.w_0 = w_per[0]
             self.w = w_per[1:]
