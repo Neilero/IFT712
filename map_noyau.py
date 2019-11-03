@@ -19,7 +19,7 @@ class MAPnoyau:
         sigma_square: paramètre du noyau rbf
         b, d: paramètres du noyau sigmoidal
         M,c: paramètres du noyau polynomial
-        noyau: rbf, lineaire, olynomial ou sigmoidal
+        noyau: rbf, lineaire, polynomial ou sigmoidal
         """
         self.lamb = lamb
         self.a = None
@@ -75,8 +75,8 @@ class MAPnoyau:
         Retourne la différence au carré entre
         la cible ``t`` et la prédiction ``prediction``.
         """
-        # AJOUTER CODE ICI
-        return 0.
+
+        return (t-prediction)**2
 
     def validation_croisee(self, x_tab, t_tab):
         """
