@@ -8,7 +8,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-
+from sklearn.metrics import pairwise_distances
+from scipy.spatial.distance import pdist, cdist, squareform
 
 class MAPnoyau:
     def __init__(self, lamb=0.2, sigma_square=1.06, b=1.0, c=0.1, d=1.0, M=2, noyau='rbf'):
@@ -29,6 +30,7 @@ class MAPnoyau:
         self.b = b
         self.d = d
         self.noyau = noyau
+        self.kernel = None      # prevent redefining of the kernel
         self.x_train = None
 
         
@@ -52,7 +54,26 @@ class MAPnoyau:
         l'equation 6.8 du livre de Bishop et garder en mémoire les données
         d'apprentissage dans ``self.x_train``
         """
-        #AJOUTER CODE ICI
+
+        self.x_train = x_train
+
+        if self.noyau == "lineaire":
+            self.kernel = lambda x1,x2 : np.transpose(x1).dot(x2)
+
+        if self.noyau == "rbf":
+            self.kernel = lambda x1,x2 : np.exp( - ((x1-x2)**2) / (2*self.sigma_square) )
+
+        if self.noyau == "polynomial":
+            self.kernel = lambda x1,x2 : (np.transpose(x1).dot(x2) + self.c)**self.M
+
+        if self.noyau == "sigmoidal":
+            self.kernel = lambda x1,x2 : np.tanh( self.b * np.transpose(x1).dot(x2) + self.d )
+
+        else:
+            raise ValueError("Noyau inconnu")
+
+        K = squareform(pdist(x_train, self.kernel))
+        self.a = np.invert(K + (self.lamb*np.identity(len(x_train))) ) * t_train
         
     def prediction(self, x):
         """
@@ -67,8 +88,9 @@ class MAPnoyau:
         classification binaire, la prediction est +1 lorsque y(x)>0.5 et 0
         sinon
         """
-        #AJOUTER CODE ICI
-        return 0
+
+        prediction = cdist(self.x_train, x, self.kernel).transpose() * self.a
+        return round(prediction)
 
     def erreur(self, t, prediction):
         """
