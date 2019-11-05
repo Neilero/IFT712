@@ -21,7 +21,7 @@ def analyse_erreur(err_train, err_test):
     Fonction qui affiche un WARNING lorsqu'il y a apparence de sur ou de sous
     apprentissage
     """
-    #AJOUTER CODE ICI
+    #TODO AJOUTER CODE ICI
 
 def main():
 
@@ -53,7 +53,7 @@ def main():
         mp.validation_croisee(x_train, t_train)
 
     # ~= À MODIFIER =~. 
-    # AJOUTER CODE AFIN DE CALCULER L'ERREUR D'APPRENTISSAGE
+    #TODO AJOUTER CODE AFIN DE CALCULER L'ERREUR D'APPRENTISSAGE
     # ET DE VALIDATION EN % DU NOMBRE DE POINTS MAL CLASSES
     err_train = 50
     err_test = 50

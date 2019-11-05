@@ -60,13 +60,13 @@ class MAPnoyau:
         if self.noyau == "lineaire":
             self.kernel = lambda x1,x2 : np.transpose(x1).dot(x2)
 
-        if self.noyau == "rbf":
+        elif self.noyau == "rbf":
             self.kernel = lambda x1,x2 : np.exp( - ((x1-x2)**2) / (2*self.sigma_square) )
 
-        if self.noyau == "polynomial":
+        elif self.noyau == "polynomial":
             self.kernel = lambda x1,x2 : (np.transpose(x1).dot(x2) + self.c)**self.M
 
-        if self.noyau == "sigmoidal":
+        elif self.noyau == "sigmoidal":
             self.kernel = lambda x1,x2 : np.tanh( self.b * np.transpose(x1).dot(x2) + self.d )
 
         else:
@@ -112,7 +112,19 @@ class MAPnoyau:
         de 0.000000001 à 2, les valeurs de ``self.c`` de 0 à 5, les valeurs
         de ''self.b'' et ''self.d'' de 0.00001 à 0.01 et ``self.M`` de 2 à 6
         """
-        # AJOUTER CODE ICI
+
+        rangeDic = {
+            "sigma": np.linspace(0.000000001, 2),
+            "lamb" : np.linspace(0.000000001, 2),
+            "c": np.linspace(0, 5),
+            "b": np.linspace(0.00001, 0.01),
+            "d": np.linspace(0.00001, 0.01),
+            "M": np.linspace(2, 6)
+        }
+
+
+
+        #TODO AJOUTER CODE ICI
 
     def affichage(self, x_tab, t_tab):
 
