@@ -8,8 +8,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.metrics import pairwise_distances
 from scipy.spatial.distance import pdist, cdist, squareform
+from sklearn.model_selection import ShuffleSplit
 
 class MAPnoyau:
     def __init__(self, lamb=0.2, sigma_square=1.06, b=1.0, c=0.1, d=1.0, M=2, noyau='rbf'):
@@ -30,9 +30,16 @@ class MAPnoyau:
         self.b = b
         self.d = d
         self.noyau = noyau
-        self.kernel = None      # prevent redefining of the kernel
         self.x_train = None
-
+        self.kernel = None      # prevent redefining of the kernel  TODO translate
+        self.rangeDic = {       # hyper-parameters' values tested in cross-validation TODO translate
+            "sigma": np.geomspace(0.000000001, 2),
+            "lamb": np.geomspace(0.000000001, 2),
+            "c": np.linspace(0, 5),
+            "b": np.geomspace(0.00001, 0.01),
+            "d": np.geomspace(0.00001, 0.01),
+            "M": np.linspace(2, 6)
+        }
         
 
     def entrainement(self, x_train, t_train):
@@ -90,7 +97,7 @@ class MAPnoyau:
         """
 
         prediction = cdist(self.x_train, x, self.kernel).transpose() * self.a
-        return round(prediction)
+        return np.round(prediction)
 
     def erreur(self, t, prediction):
         """
@@ -98,7 +105,7 @@ class MAPnoyau:
         la cible ``t`` et la prédiction ``prediction``.
         """
 
-        return (t-prediction)**2
+        return np.power((t-prediction), 2)
 
     def validation_croisee(self, x_tab, t_tab):
         """
@@ -112,19 +119,98 @@ class MAPnoyau:
         de 0.000000001 à 2, les valeurs de ``self.c`` de 0 à 5, les valeurs
         de ''self.b'' et ''self.d'' de 0.00001 à 0.01 et ``self.M`` de 2 à 6
         """
+        best_error = float("inf")
 
-        rangeDic = {
-            "sigma": np.linspace(0.000000001, 2),
-            "lamb" : np.linspace(0.000000001, 2),
-            "c": np.linspace(0, 5),
-            "b": np.linspace(0.00001, 0.01),
-            "d": np.linspace(0.00001, 0.01),
-            "M": np.linspace(2, 6)
-        }
+        if self.noyau == "lineaire":
+            self.lamb = self.recherche_meilleur_lamb(x_tab, t_tab)
 
+        elif self.noyau == "rbf":
+            best_sigma = self.sigma_square
+            best_lamb = self.lamb
 
+            for sigma in self.rangeDic["sigma"]:
+                self.sigma_square = sigma
 
-        #TODO AJOUTER CODE ICI
+                lamb, lamb_error = self.recherche_meilleur_lamb(x_tab, t_tab)
+                if lamb_error < best_error:
+                    best_error = lamb_error
+                    best_sigma = sigma
+                    best_lamb = lamb
+
+            self.sigma_square = best_sigma
+            self.lamb = best_lamb
+
+        elif self.noyau == "polynomial":
+            best_c = self.c
+            best_M = self.M
+            best_lamb = self.lamb
+
+            for c in self.rangeDic["c"]:
+                self.c = c
+
+                for M in self.rangeDic["M"]:
+                    self.M = M
+
+                    lamb, lamb_error = self.recherche_meilleur_lamb(x_tab, t_tab)
+                    if lamb_error < best_error:
+                        best_error = lamb_error
+                        best_c = c
+                        best_M = M
+                        best_lamb = lamb
+
+            self.c = best_c
+            self.M = best_M
+            self.lamb = best_lamb
+
+        elif self.noyau == "sigmoidal":
+            best_b = self.b
+            best_d = self.d
+            best_lamb = self.lamb
+
+            for b in self.rangeDic["b"]:
+                self.b = b
+
+                for d in self.rangeDic["d"]:
+                    self.d = d
+
+                    lamb, lamb_error = self.recherche_meilleur_lamb(x_tab, t_tab)
+                    if lamb_error < best_error:
+                        best_error = lamb_error
+                        best_b = b
+                        best_d = d
+                        best_lamb = lamb
+
+            self.b = best_b
+            self.d = best_d
+            self.lamb = best_lamb
+
+        else:
+            raise ValueError("Noyau inconnu")
+
+        # entrainement apres cross-validation
+        self.entrainement(x_tab, t_tab)
+
+    def recherche_meilleur_lamb(self, x_tab, t_tab):
+        """
+        Cette fonction trouve le meilleur hyperparametre ``self.lamb`` et le retourne avec son erreur
+        """
+        k = 1
+        validate_size = 0.2
+        best_lamb = self.lamb
+        best_lamb_error = float("inf")
+
+        for lamb in self.rangeDic["lamb"]:
+            self.lamb = lamb
+            error = 0
+            for train_index, validate_index in ShuffleSplit(n_splits=k, test_size=validate_size).split(x_tab):
+                self.entrainement(x_tab[train_index], t_tab[train_index])
+                error += self.erreur(t_tab[validate_index], self.prediction(x_tab[validate_index]))
+
+            if error < best_lamb_error:
+                best_lamb_error = error
+                best_lamb = lamb
+
+        return best_lamb, best_lamb_error
 
     def affichage(self, x_tab, t_tab):
 
