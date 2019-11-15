@@ -21,7 +21,14 @@ def analyse_erreur(err_train, err_test):
     Fonction qui affiche un WARNING lorsqu'il y a apparence de sur ou de sous
     apprentissage
     """
-    #TODO AJOUTER CODE ICI
+
+    niveau_similarite = 1.5
+    if err_test > 20:   #si l'erreur de test est "grande" et...
+        if err_test > err_train*niveau_similarite: #...les erreurs sont "significativement differentes"
+            print("Le model est peut-être en sur-apprentissage!")
+
+        else:   #... et les erreurs sont "similaire"
+            print("Le model est peut-être en sous-apprentissage!")
 
 def main():
 
@@ -52,11 +59,8 @@ def main():
     else:
         mp.validation_croisee(x_train, t_train)
 
-    # ~= À MODIFIER =~. 
-    #TODO AJOUTER CODE AFIN DE CALCULER L'ERREUR D'APPRENTISSAGE
-    # ET DE VALIDATION EN % DU NOMBRE DE POINTS MAL CLASSES
-    err_train = 50
-    err_test = 50
+    err_train = (np.sum(mp.prediction(x_train) != t_train) / nb_train) *100
+    err_test = (np.sum(mp.prediction(x_test) != t_test) / nb_test) *100
 
     print('Erreur train = ', err_train, '%')
     print('Erreur test = ', err_test, '%')
