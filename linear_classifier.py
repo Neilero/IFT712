@@ -1,5 +1,5 @@
 import numpy as np
-
+from scipy.special import softmax
 
 class LinearClassifier(object):
     def __init__(self, x_train, y_train, x_val, y_val, num_classes, bias=False):
@@ -87,11 +87,12 @@ class LinearClassifier(object):
 
          Returns a class label for each sample (a number between 0 and num_classes-1)
         """
-        class_label = np.zeros(X.shape[0])
         #############################################################################
         # TODO: Return the best class label.                                        #
         #############################################################################
-
+        if self.bias:
+            X = augment(X)
+        class_label = np.argmax( self.W.dot(np.transpose(X)), axis=0)
         #############################################################################
         #                          END OF YOUR CODE                                 #
         #############################################################################
@@ -114,7 +115,13 @@ class LinearClassifier(object):
         #############################################################################
         # TODO: Compute the softmax loss & accuracy for a series of samples X,y .   #
         #############################################################################
-
+        for i, x in enumerate(X):
+            x_augmented = augment(x) if self.bias else x
+            x_loss, _ = self.cross_entropy_loss(x_augmented, y[i], reg)
+            loss += x_loss
+            accu += self.predict(x) == y[i]
+        loss /= X.shape[0]
+        accu /= X.shape[0]
         #############################################################################
         #                          END OF YOUR CODE                                 #
         #############################################################################
@@ -147,7 +154,10 @@ class LinearClassifier(object):
         # 3- Dont forget the regularization!                                        #
         # 4- Compute gradient => eq.(4.104)                                         #
         #############################################################################
-
+        Y = softmax(self.W.transpose().dot(x))
+        T = np.eye(self.num_classes)[y]
+        loss = - np.dot(T, np.log(Y)) + reg * np.multiply(self.W, self.W).sum()
+        dW = (Y-T).reshape(-1, 1).dot(x.reshape(1,-1)) + 2*reg*self.W
         #############################################################################
         #                          END OF YOUR CODE                                 #
         #############################################################################
