@@ -154,7 +154,7 @@ class LinearClassifier(object):
         # 3- Dont forget the regularization!                                        #
         # 4- Compute gradient => eq.(4.104)                                         #
         #############################################################################
-        Y = softmax(self.W.transpose().dot(x))
+        Y = softmax(self.W.dot(x))
         T = np.eye(self.num_classes)[y]
         loss = - np.dot(T, np.log(Y)) + reg * np.multiply(self.W, self.W).sum()
         dW = (Y-T).reshape(-1, 1).dot(x.reshape(1,-1)) + 2*reg*self.W
