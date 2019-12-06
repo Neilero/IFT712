@@ -1,6 +1,5 @@
 import numpy as np
-from scipy.special import softmax, expit
-from sklearn.metrics import log_loss
+from scipy.special import softmax
 
 class TwoLayerClassifier(object):
     def __init__(self, x_train, y_train, x_val, y_val, num_features, num_hidden_neurons, num_classes, activation='relu'):
@@ -89,7 +88,8 @@ class TwoLayerClassifier(object):
             #############################################################################
             # TODO: return the most probable class label for one sample.                #
             #############################################################################
-            return np.argmax( self.net.forward(x) )
+            pred = softmax( self.net.forward(x) )
+            return np.argmax(pred)
             #############################################################################
             #                          END OF YOUR CODE                                 #
             #############################################################################
@@ -100,7 +100,8 @@ class TwoLayerClassifier(object):
             #############################################################################
             T = np.zeros(x.shape[0])
             for i, X in enumerate(x):
-                T[i] = np.argmax( self.net.forward(x) )
+                pred = softmax( self.net.forward(X) )
+                T[i] = np.argmax(pred)
             return T
             #############################################################################
             #                          END OF YOUR CODE                                 #
@@ -127,11 +128,18 @@ class TwoLayerClassifier(object):
         # TODO: Compute the softmax loss & accuracy for a series of samples X,y .   #
         #############################################################################
         for i, X in enumerate(x):
-            X_loss, _ = self.net.cross_entropy_loss(X, y[i])
+            scores = self.net.forward(X)
+            X_loss, _ = self.net.cross_entropy_loss(scores, y[i])
             loss += X_loss
             accu += self.predict(X) == y[i]
         loss /= x.shape[0]
         accu /= x.shape[0]
+
+        # Add regularization if l2_r is valid
+        if l2_r > 0:
+            W1 = self.net.parameters[0]
+            W2 = self.net.parameters[1]
+            loss += l2_r * (np.linalg.norm(W1) + np.linalg.norm(W2))
         #############################################################################
         #                          END OF YOUR CODE                                 #
         #############################################################################
@@ -227,9 +235,10 @@ class TwoLayerNet(object):
         # 4- Compute gradient with respect to the score => eq.(4.104) with phi_n=1  #
         #############################################################################
         Y = softmax(scores)
+        Y = np.clip(Y, 1e-15, 1 - 1e-15)    # avoid computing log(0)
         T = np.eye(self.num_classes)[y]
-        loss = log_loss(T, Y)
-        # dW =
+        loss = - np.dot(T, np.log(Y))
+        dloss_dscores = (Y-T)
         #############################################################################
         #                          END OF YOUR CODE                                 #
         #############################################################################
@@ -280,11 +289,11 @@ class DenseLayer(object):
         if self.activation == 'relu':
             h = lambda phi : max(0, phi)
         elif self.activation == 'sigmoid':
-            h = lambda phi : expit(phi) # Scipy's sigmoid implementation
+            h = lambda phi : sigmoid(phi)
         else:
             h = lambda phi : phi
 
-        f = h(np.dot(self.W, x))
+        f = np.array([h(y) for y in np.dot(self.W.T, x)])
         #############################################################################
         #                          END OF YOUR CODE                                 #
         #############################################################################

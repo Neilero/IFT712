@@ -92,7 +92,8 @@ class LinearClassifier(object):
         #############################################################################
         if self.bias:
             X = augment(X)
-        class_label = np.argmax( self.W.dot(np.transpose(X)), axis=0)
+        pred = softmax( self.W.dot(np.transpose(X)), axis=0 )
+        class_label = np.argmax( pred, axis=0)
         #############################################################################
         #                          END OF YOUR CODE                                 #
         #############################################################################
@@ -155,6 +156,7 @@ class LinearClassifier(object):
         # 4- Compute gradient => eq.(4.104)                                         #
         #############################################################################
         Y = softmax(self.W.dot(x))
+        Y = np.clip(Y, 1e-15, 1 - 1e-15)    # avoid computing log(0)
         T = np.eye(self.num_classes)[y]
         loss = - np.dot(T, np.log(Y)) + reg * np.multiply(self.W, self.W).sum()
         dW = (Y-T).reshape(-1, 1).dot(x.reshape(1,-1)) + 2*reg*self.W
